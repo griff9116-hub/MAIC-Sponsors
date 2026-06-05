@@ -1,65 +1,44 @@
 // Countdown to 30 June 2026 (early access deadline)
 (function () {
   const deadline = new Date('2026-06-30T23:59:59Z').getTime();
-
   function update() {
-    const now = Date.now();
-    const diff = deadline - now;
-
-    if (diff <= 0) {
-      document.getElementById('countdown').textContent = 'Deadline passed';
-      return;
-    }
-
-    const days  = Math.floor(diff / 86400000);
-    const hours = Math.floor((diff % 86400000) / 3600000);
-    const mins  = Math.floor((diff % 3600000)  / 60000);
-    const secs  = Math.floor((diff % 60000)    / 1000);
-
-    document.getElementById('cd-days').textContent  = String(days).padStart(2, '0');
-    document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
-    document.getElementById('cd-mins').textContent  = String(mins).padStart(2, '0');
-    document.getElementById('cd-secs').textContent  = String(secs).padStart(2, '0');
+    const diff = deadline - Date.now();
+    if (diff <= 0) { document.getElementById('countdown').textContent = 'Deadline passed'; return; }
+    document.getElementById('cd-days').textContent  = String(Math.floor(diff / 86400000)).padStart(2, '0');
+    document.getElementById('cd-hours').textContent = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0');
+    document.getElementById('cd-mins').textContent  = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+    document.getElementById('cd-secs').textContent  = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
   }
-
-  update();
-  setInterval(update, 1000);
+  update(); setInterval(update, 1000);
 })();
 
-// Sticky nav background on scroll
+// Sticky nav
 (function () {
   const nav = document.getElementById('nav');
   window.addEventListener('scroll', () => {
-    nav.style.background = window.scrollY > 60
-      ? 'rgba(10,22,40,0.98)'
-      : 'rgba(10,22,40,0.92)';
+    nav.style.background = window.scrollY > 60 ? 'rgba(10,22,40,0.98)' : 'rgba(10,22,40,0.92)';
   }, { passive: true });
 })();
 
-// Mobile menu toggle
+// Mobile menu
 (function () {
   const burger = document.getElementById('burger');
   const menu   = document.getElementById('mobileMenu');
-
   burger.addEventListener('click', () => {
     menu.classList.toggle('open');
     burger.setAttribute('aria-expanded', menu.classList.contains('open'));
   });
-
-  menu.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => menu.classList.remove('open'));
-  });
+  menu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => menu.classList.remove('open')));
 })();
 
 // Sponsor form — validation + Formspree submission
-// ⚠ Replace YOUR_FORM_ID below with the ID from your Formspree dashboard (formspree.io)
+// Replace YOUR_FORM_ID with the ID from your Formspree dashboard (formspree.io)
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID';
 
 (function () {
-  const form        = document.getElementById('sponsorForm');
-  const success     = document.getElementById('formSuccess');
-  const submitBtn   = form ? form.querySelector('[type="submit"]') : null;
-
+  const form      = document.getElementById('sponsorForm');
+  const success   = document.getElementById('formSuccess');
+  const submitBtn = form ? form.querySelector('[type="submit"]') : null;
   if (!form) return;
 
   function validate() {
@@ -78,25 +57,18 @@ const FORMSPREE_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID';
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!validate()) return;
-
     submitBtn.disabled = true;
     submitBtn.textContent = 'Sending…';
-
     try {
       const res = await fetch(FORMSPREE_ENDPOINT, {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Accept': 'application/json' },
-        body:    new FormData(form),
+        body: new FormData(form),
       });
-
-      if (res.ok) {
-        form.hidden    = true;
-        success.hidden = false;
-      } else {
+      if (res.ok) { form.hidden = true; success.hidden = false; }
+      else {
         const data = await res.json().catch(() => ({}));
-        const msg  = data?.errors?.map(err => err.message).join(', ')
-                     || 'Submission failed. Please email us directly at maic@steampunkventures.com';
-        showFormError(msg);
+        showFormError(data?.errors?.map(e => e.message).join(', ') || 'Submission failed. Please email maic@steampunkventures.com');
         resetBtn();
       }
     } catch {
@@ -105,57 +77,27 @@ const FORMSPREE_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID';
     }
   });
 
-  function resetBtn() {
-    submitBtn.disabled    = false;
-    submitBtn.textContent = 'Request Early Access →';
-  }
-
+  function resetBtn() { submitBtn.disabled = false; submitBtn.textContent = 'Request Early Access →'; }
   function showFormError(msg) {
-    let errEl = form.querySelector('.form-error');
-    if (!errEl) {
-      errEl = document.createElement('p');
-      errEl.className = 'form-error';
-      errEl.style.cssText = 'color:#c53030;font-size:0.85rem;margin-top:-8px;';
-      submitBtn.before(errEl);
-    }
-    errEl.textContent = msg;
+    let el = form.querySelector('.form-error');
+    if (!el) { el = document.createElement('p'); el.className = 'form-error'; el.style.cssText = 'color:#c53030;font-size:0.85rem;margin-top:-8px;'; submitBtn.before(el); }
+    el.textContent = msg;
   }
-
-  form.querySelectorAll('input, select').forEach(field => {
-    field.addEventListener('input', () => {
-      field.classList.remove('error');
-      const errEl = form.querySelector('.form-error');
-      if (errEl) errEl.textContent = '';
-    });
-  });
+  form.querySelectorAll('input, select').forEach(f => f.addEventListener('input', () => {
+    f.classList.remove('error');
+    const el = form.querySelector('.form-error'); if (el) el.textContent = '';
+  }));
 })();
 
-// Intersection Observer — fade-in on scroll
+// Scroll reveal
 (function () {
   const style = document.createElement('style');
-  style.textContent = `
-    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.55s ease, transform 0.55s ease; }
-    .reveal.visible { opacity: 1; transform: none; }
-  `;
+  style.textContent = '.reveal{opacity:0;transform:translateY(28px);transition:opacity .55s ease,transform .55s ease}.reveal.visible{opacity:1;transform:none}';
   document.head.appendChild(style);
-
-  const targets = document.querySelectorAll(
-    '.why-card, .benefit-item, .timeline__card, .package-card, .testimonial-card, .fit-check, .industry-tag'
-  );
-
-  targets.forEach((el, i) => {
-    el.classList.add('reveal');
-    el.style.transitionDelay = `${(i % 4) * 60}ms`;
-  });
-
+  const targets = document.querySelectorAll('.why-card,.benefit-item,.timeline__card,.package-card,.testimonial-card,.fit-check,.industry-tag');
+  targets.forEach((el, i) => { el.classList.add('reveal'); el.style.transitionDelay = `${(i % 4) * 60}ms`; });
   const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
+    entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
   }, { threshold: 0.1 });
-
   targets.forEach(el => observer.observe(el));
 })();
