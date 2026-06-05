@@ -51,42 +51,82 @@
   });
 })();
 
-// Sponsor form — basic validation + success state
+// Sponsor form — validation + Formspree submission
+// ⚠ Replace YOUR_FORM_ID below with the ID from your Formspree dashboard (formspree.io)
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID';
+
 (function () {
-  const form    = document.getElementById('sponsorForm');
-  const success = document.getElementById('formSuccess');
+  const form        = document.getElementById('sponsorForm');
+  const success     = document.getElementById('formSuccess');
+  const submitBtn   = form ? form.querySelector('[type="submit"]') : null;
 
   if (!form) return;
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-
+  function validate() {
     let valid = true;
     form.querySelectorAll('[required]').forEach(field => {
       field.classList.remove('error');
-      if (!field.value.trim()) {
-        field.classList.add('error');
-        valid = false;
-      }
+      if (!field.value.trim()) { field.classList.add('error'); valid = false; }
     });
-
     const emailField = form.querySelector('#email');
     if (emailField && emailField.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailField.value)) {
-      emailField.classList.add('error');
-      valid = false;
+      emailField.classList.add('error'); valid = false;
     }
+    return valid;
+  }
 
-    if (!valid) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
 
-    form.hidden   = true;
-    success.hidden = false;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
 
-    // In production: POST form data to your backend / form service here.
-    // e.g. fetch('/api/sponsor-request', { method: 'POST', body: new FormData(form) })
+    try {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
+        method:  'POST',
+        headers: { 'Accept': 'application/json' },
+        body:    new FormData(form),
+      });
+
+      if (res.ok) {
+        form.hidden    = true;
+        success.hidden = false;
+      } else {
+        const data = await res.json().catch(() => ({}));
+        const msg  = data?.errors?.map(err => err.message).join(', ')
+                     || 'Submission failed. Please email us directly at maic@steampunkventures.com';
+        showFormError(msg);
+        resetBtn();
+      }
+    } catch {
+      showFormError('Network error. Please try again or email maic@steampunkventures.com');
+      resetBtn();
+    }
   });
 
+  function resetBtn() {
+    submitBtn.disabled    = false;
+    submitBtn.textContent = 'Request Early Access →';
+  }
+
+  function showFormError(msg) {
+    let errEl = form.querySelector('.form-error');
+    if (!errEl) {
+      errEl = document.createElement('p');
+      errEl.className = 'form-error';
+      errEl.style.cssText = 'color:#c53030;font-size:0.85rem;margin-top:-8px;';
+      submitBtn.before(errEl);
+    }
+    errEl.textContent = msg;
+  }
+
   form.querySelectorAll('input, select').forEach(field => {
-    field.addEventListener('input', () => field.classList.remove('error'));
+    field.addEventListener('input', () => {
+      field.classList.remove('error');
+      const errEl = form.querySelector('.form-error');
+      if (errEl) errEl.textContent = '';
+    });
   });
 })();
 
