@@ -179,15 +179,17 @@ a:hover { color: #fff; }
 .nav__links a:hover { color: var(--text-primary); }
 .nav-cta {
   font-size: 0.82rem !important;
-  font-weight: 600;
-  color: var(--accent-cyan) !important;
-  border: 1px solid var(--border-cyan);
+  font-weight: 700;
+  color: var(--bg-base) !important;
+  background: var(--accent-cyan);
   padding: 0.5rem 1.25rem;
   border-radius: 4px;
-  transition: background 0.2s, color 0.2s !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
+  white-space: nowrap;
 }
 .nav-cta:hover {
-  background: var(--accent-cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0,229,255,0.35);
   color: var(--bg-base) !important;
 }
 .nav__burger {
