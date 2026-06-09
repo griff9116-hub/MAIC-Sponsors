@@ -56,7 +56,7 @@ a:hover { color: #fff; }
 
 /* ===== BRAND WORDMARK ===== */
 .brand-wordmark {
-  height: 30px;
+  height: 22px;
   width: auto;
   display: block;
 }
@@ -114,6 +114,7 @@ a:hover { color: #fff; }
 .btn--nav {
   color: var(--accent-cyan);
   border: 1px solid var(--border-cyan);
+  white-space: nowrap;
   background: transparent;
   font-weight: 700;
   padding: 10px 22px;
@@ -143,7 +144,7 @@ a:hover { color: #fff; }
 .nav__inner {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 20px;
   height: 68px;
 }
 .nav__logo {
@@ -166,15 +167,16 @@ a:hover { color: #fff; }
 .nav__links {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 20px;
   list-style: none;
   margin-left: auto;
 }
 .nav__links a {
   color: rgba(255,255,255,0.75);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 500;
   transition: color var(--transition);
+  white-space: nowrap;
 }
 .nav__links a:hover { color: var(--accent-cyan); }
 .nav__burger {
@@ -955,7 +957,7 @@ a:hover { color: #fff; }
 }
 
 @media (max-width: 768px) {
-  .nav__links, .nav > .btn--nav { display: none; }
+  .nav__links, .btn--nav { display: none; }
   .nav__burger { display: flex; }
   .hero__stats {
     padding: 24px 20px;
